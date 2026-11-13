@@ -1,5 +1,6 @@
 import * as Goody from "../modules/goody.js";
 import * as Porte from "../modules/porte.js";
+import * as Bordi from "../modules/bordi.js";
 import * as GameCamera from "../modules/camera.js";
 
 const LARGHEZZA_SCHERMO = 1280;
@@ -18,9 +19,10 @@ const PAVIMENTO_Y = 600;
 const PAVIMENTO_COLORE = "0x000000";
 const PAVIMENTO_ALPHA = 0;
 
+const BORDO_SINISTRO_X = 120;
+const BORDO_DESTRO_X = LARGHEZZA_MONDO-320;
+
 const PUO_SALTARE = false;
-const SPAWN_X = 150;
-const SPAWN_DIREZIONE = 1;
 const DESTINAZIONE_OCCHIALI = null;
 
 const PORTA_1_X = 150;
@@ -28,7 +30,7 @@ const PORTA_1_DESTINAZIONE = "stanza";
 const PORTA_2_X = 560;
 const PORTA_2_DESTINAZIONE = null;
 const PORTA_3_X = 1060;
-const PORTA_3_DESTINAZIONE = null;
+const PORTA_3_DESTINAZIONE = "stanza_goody";
 const PORTA_4_X = 1490;
 const PORTA_4_DESTINAZIONE = null;
 
@@ -51,6 +53,10 @@ function crea_pavimento(scene) {
     return pavimento;
 }
 
+function crea_bordi(scene) {
+    return Bordi.crea(scene, BORDO_SINISTRO_X, BORDO_DESTRO_X, ALTEZZA_SCHERMO);
+}
+
 function crea_porte(scene) {
     const porta1 = Porte.crea(scene, PORTA_1_X, PAVIMENTO_Y, PORTA_1_DESTINAZIONE);
     const porta2 = Porte.crea(scene, PORTA_2_X, PAVIMENTO_Y, PORTA_2_DESTINAZIONE);
@@ -59,9 +65,30 @@ function crea_porte(scene) {
     return [porta1, porta2, porta3, porta4];
 }
 
-function crea_giocatore(scene, pavimento, porte) {
-    goody = Goody.inizializza(scene, SPAWN_X, PAVIMENTO_Y, PUO_SALTARE, SPAWN_DIREZIONE);
+function crea_giocatore(scene, pavimento, porte, bordi) {
+    let goody_spawn_x = null;
+    let goody_spawn_direzione = 1;
+    if(!PP.game_state.get_variable("stanzaPreSwap")){
+        goody_spawn_x = 150;
+    }
+    else{
+        switch(PP.game_state.get_variable("stanzaPreSwap")){
+            case "stanza":
+                goody_spawn_x = PORTA_1_X;
+                break;
+            case "stanza_goody":
+                goody_spawn_x = PORTA_3_X;
+                goody_spawn_direzione = -1;
+                break;
+            default:
+                goody_spawn_x = 150;
+        }
+    }
+    goody = Goody.inizializza(scene, goody_spawn_x, PAVIMENTO_Y, PUO_SALTARE, goody_spawn_direzione);
     PP.physics.add_collider(scene, goody, pavimento);
+    for (const bordo of bordi) {
+        PP.physics.add_collider(scene, goody, bordo);
+    }
     Porte.calcola_vicinanza_porta(scene, goody, porte);
 }
 
@@ -78,8 +105,9 @@ function create(scene) {
     imposta_mondo(scene);
     crea_sfondo(scene);
     const pavimento = crea_pavimento(scene);
+    const bordi = crea_bordi(scene);
     const porte = crea_porte(scene);
-    crea_giocatore(scene, pavimento, porte);
+    crea_giocatore(scene, pavimento, porte, bordi);
     imposta_camera(scene);
 }
 

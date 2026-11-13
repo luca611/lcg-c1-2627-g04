@@ -1,5 +1,6 @@
 import * as Goody from "../modules/goody.js";
 import * as Porte from "../modules/porte.js";
+import * as Bordi from "../modules/bordi.js";
 import * as GameCamera from "../modules/camera.js";
 
 const LARGHEZZA_SCHERMO = 1280;
@@ -23,6 +24,9 @@ const PARALLASSE_PRIMO_PIANO = 1.25;
 const PAVIMENTO_Y = 600;
 const PAVIMENTO_COLORE = "0x000000";
 const PAVIMENTO_ALPHA = 0;
+
+const BORDO_SINISTRO_X = 120;
+const BORDO_DESTRO_X = LARGHEZZA_MONDO-660;
 
 const PUO_SALTARE = false;
 const SPAWN_X = 150;
@@ -52,12 +56,16 @@ function crea_pavimento(scene) {
     return pavimento;
 }
 
+function crea_bordi(scene) {
+    return Bordi.crea(scene, BORDO_SINISTRO_X, BORDO_DESTRO_X, ALTEZZA_SCHERMO);
+}
+
 function crea_porte(scene) {
     const porta1 = Porte.crea(scene, PORTA_1_X, PAVIMENTO_Y, PORTA_1_DESTINAZIONE);
     return [porta1];
 }
 
-function crea_giocatore(scene, pavimento, porte) {
+function crea_giocatore(scene, pavimento, porte, bordi) {
     if(PP.game_state.get_variable("stanzaPreSwap") && PP.game_state.get_variable("stanzaPreSwap") === "stanza"){
         goody = Goody.inizializza(scene, PP.game_state.get_variable("GoodyXstanza"), PAVIMENTO_Y, PUO_SALTARE, PP.game_state.get_variable("GoodyDirezione"));
     }
@@ -65,6 +73,9 @@ function crea_giocatore(scene, pavimento, porte) {
         goody = Goody.inizializza(scene, SPAWN_X, PAVIMENTO_Y, PUO_SALTARE, SPAWN_DIREZIONE);
     }
     PP.physics.add_collider(scene, goody, pavimento);
+    for (const bordo of bordi) {
+        PP.physics.add_collider(scene, goody, bordo);
+    }
     Porte.calcola_vicinanza_porta(scene, goody, porte);
 }
 
@@ -92,8 +103,9 @@ function create(scene) {
     imposta_mondo(scene);
     crea_sfondo(scene);
     const pavimento = crea_pavimento(scene);
+    const bordi = crea_bordi(scene);
     const porte = crea_porte(scene);
-    crea_giocatore(scene, pavimento, porte);
+    crea_giocatore(scene, pavimento, porte, bordi);
     imposta_camera(scene);
     crea_primo_piano(scene);
 }

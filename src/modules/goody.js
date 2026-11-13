@@ -1,4 +1,5 @@
 import * as GameCamera from "./camera.js";
+import { TASTO_DESTRA, TASTO_SINISTRA, TASTO_SALTO, TASTO_INTERAZIONE, TASTO_OCCHIALI } from "../utils/tasti.js";
 
 const PERCORSO_SPRITE = "./resources/imgs/personaggio/goody.png";
 const FRAME_LARGHEZZA = 222;
@@ -24,12 +25,6 @@ const VELOCITA_CADUTA_MAX = 900;
 
 const DURATA_INTERAZIONE_MS = 250;
 const SOGLIA_VELOCITA_CAMMINATA = 20;
-
-const TASTO_DESTRA = PP.key_codes.D;
-const TASTO_SINISTRA = PP.key_codes.A;
-const TASTO_SALTO = PP.key_codes.SPACE;
-const TASTO_INTERAZIONE = PP.key_codes.E;
-const TASTO_OCCHIALI = PP.key_codes.G;
 
 const ANIM_FERMO_NOME = "goody_fermo";
 const ANIM_FERMO_FRAMES = [0];

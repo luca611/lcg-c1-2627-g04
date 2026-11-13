@@ -1,3 +1,5 @@
+import { TASTO_FRECCIA_SU, TASTO_FRECCIA_GIU, TASTO_FRECCIA_SINISTRA, TASTO_FRECCIA_DESTRA } from "../utils/tasti.js";
+
 const ZOOM_BASE = 1;
 const DURATA_ZOOM_DEFAULT_MS = 0;
 const EASING_ZOOM = "Sine.easeInOut";
@@ -11,11 +13,6 @@ const BOUNDS_Y = 0;
 const PEEK_DISTANZA_X = 150;
 const PEEK_DISTANZA_Y = 50;
 const PEEK_MORBIDEZZA = 0.1;
-
-const TASTO_SU = PP.key_codes.UP;
-const TASTO_GIU = PP.key_codes.DOWN;
-const TASTO_SINISTRA = PP.key_codes.LEFT;
-const TASTO_DESTRA = PP.key_codes.RIGHT;
 
 let stato_camera = null;
 
@@ -54,18 +51,18 @@ export function limita_ai_confini(scene, x, y, larghezza, altezza) {
 
 export function peek(scene) {
     let dir_x = 0;
-    if (PP.interactive.kb.is_key_down(scene, TASTO_DESTRA)) {
+    if (PP.interactive.kb.is_key_down(scene, TASTO_FRECCIA_DESTRA)) {
         dir_x = dir_x + 1;
     }
-    if (PP.interactive.kb.is_key_down(scene, TASTO_SINISTRA)) {
+    if (PP.interactive.kb.is_key_down(scene, TASTO_FRECCIA_SINISTRA)) {
         dir_x = dir_x - 1;
     }
 
     let dir_y = 0;
-    if (PP.interactive.kb.is_key_down(scene, TASTO_GIU)) {
+    if (PP.interactive.kb.is_key_down(scene, TASTO_FRECCIA_GIU)) {
         dir_y = dir_y + 1;
     }
-    if (PP.interactive.kb.is_key_down(scene, TASTO_SU)) {
+    if (PP.interactive.kb.is_key_down(scene, TASTO_FRECCIA_SU)) {
         dir_y = dir_y - 1;
     }
 
