@@ -1,19 +1,111 @@
-/* PER CLAUDE:
-    in questo file vorrei avere una funzione che crei una piattaforma dati:
-    -> coordinate 
-    -> angolo se inclinata
-    -> l'attrito se non è quello base e quanto (se scivoloso oppure appiccicoso) (l'intervallo dove è scivolosa o appicicosa)
-    -> se ha un punto di salto (e le coordinate sull'oggetto dove si trova il punto di salto) e  quanto lancia in alto il salto 
-    -> se è mobile e in che direzione si muove e quanto velocemente e le coordinate dei punti di partenza e arrivo del movimento
-
-    dopodichè analizza l'immagine Corridoio.png e crea le piattaforme che vedi in quella immagine, con le coordinate e le caratteristiche che vedi nell'immagine.
-    (lo specchio è scivoloso per metà e tutte le molle sono punti di salto, il tubetto di colla è appicicoso e non permette il salto)
-*/
-
 const COLORE_HITBOX = "0x000000";
 const ALPHA_HITBOX = 0;
+const COLORE_MOLLA = "0xFF0000";
+const ALPHA_MOLLA = 0;
+const COLORE_ATTRITO = "0x00FF00";
+const ALPHA_ATTRITO = 0;
+const ALTEZZA_ZONA_ATTRITO = 20;
 
-export function crea_hitbox_obliqua(scena, oggetto, lunghezza, step, angolo_gradi, spessore) {
+const SPESSORE = 12;
+const GRADINI_DEFAULT = 40;
+
+const FORZA_MOLLA_DEFAULT = 1650;
+const MOLLA_LARGHEZZA = 60;
+const MOLLA_ALTEZZA = 40;
+const MOLLA_SPORGENZA = 30;
+
+const SCIVOLOSO_ATTRITO = 0.08;
+const SCIVOLOSO_ACCELERAZIONE = 0.35;
+const APPICCICOSO_ATTRITO = 3;
+const APPICCICOSO_ACCELERAZIONE = 0.45;
+
+/*  
+    OBBLIGATORI:
+    x, y        centro della piattaforma
+    lunghezza   larghezza della piattaforma in pixel    
+    OPZIONALI:
+    angolo      inclinazione
+    gradini     quanti step deve avere la piattaforma se inclinata
+    attrito     { tipo, da, a } appiccicoso o scivoloso e percentuale da a (0,1).  (sempre piatta e ferma: l'angolo viene ignorato)
+    salto       { x, y, forza } 
+    mobile      { da, a, velocita }  (sempre orizzontale/piatta: l'angolo viene ignorato)
+*/
+export function crea_piattaforma(scena, opzioni) {
+
+    let angolo = opzioni.angolo !== undefined ? opzioni.angolo : 0;
+    if (opzioni.mobile || opzioni.attrito) angolo = 0;
+    let gradini = opzioni.gradini !== undefined ? opzioni.gradini : GRADINI_DEFAULT;
+
+    let piattaforma = {
+        x: opzioni.x,
+        y: opzioni.y,
+        lunghezza: opzioni.lunghezza,
+        angolo: angolo,
+        attrito: opzioni.attrito,
+        mobile: opzioni.mobile,
+        molla: null,
+        zona_attrito: null
+    };
+
+    if (piattaforma.mobile) {
+        piattaforma.x = piattaforma.mobile.da.x;
+        piattaforma.y = piattaforma.mobile.da.y;
+        piattaforma.mobile.avanzamento = 0;
+        piattaforma.mobile.direzione = 1;
+    }
+
+    piattaforma.geometry = { x: piattaforma.x, y: piattaforma.y + SPESSORE / 2 };
+    
+    // SE QUALCUNO OLTRE A ME STA GUARDANDO IL CODICE SE HA VOGLIA SI POSSONO FRAMMENTARE QUESTE SEZIONI COMMENTATE IN SOTTO FUNZIONI PER 
+    // MIGLIORARE LA LEGGIBILITA'
+    
+    // qui festisco se è mobile
+    let fisica = PP.physics.type.STATIC;
+    if (piattaforma.mobile) fisica = PP.physics.type.DYNAMIC;
+
+    // qui gestisco se è obliqua
+    if (angolo === 0) {
+        crea_hitbox_obliqua(scena, piattaforma, piattaforma.lunghezza, 1, 0, SPESSORE, fisica);
+    } else {
+        crea_hitbox_obliqua(scena, piattaforma, piattaforma.lunghezza, gradini, angolo, SPESSORE, fisica);
+    }
+
+    for (let hitbox of piattaforma.hitbox) {
+        if (piattaforma.mobile) rendi_mobile(hitbox);
+    }
+
+    // Se ha una molla sopra
+    if (opzioni.salto) {
+        let salto = opzioni.salto;
+        let centro_y = salto.y - MOLLA_SPORGENZA + MOLLA_ALTEZZA / 2;
+        let zona = PP.shapes.rectangle_add(scena, salto.x, centro_y, MOLLA_LARGHEZZA, MOLLA_ALTEZZA, COLORE_MOLLA, ALPHA_MOLLA);
+
+        PP.physics.add(scena, zona, fisica);
+        if (piattaforma.mobile) rendi_mobile(zona);
+
+        zona.forza = salto.forza ? salto.forza : FORZA_MOLLA_DEFAULT; 
+        piattaforma.molla = zona;
+    }
+
+    // Se ha una zona con attrito speciale (ghiaccio o colla)
+    if (opzioni.attrito) {
+        piattaforma.zona_attrito = crea_zona_attrito(scena, piattaforma, opzioni.attrito);
+    }
+
+    return piattaforma;
+}
+
+export function crea_piattaforme(scena, dati_piattaforme) {
+    let piattaforme = [];
+    for (let piattaforma of dati_piattaforme) {
+        piattaforme.push(crea_piattaforma(scena, piattaforma));
+    }
+    return piattaforme;
+}
+
+// GENERAZIONE HITBOX OBLIQUE
+
+function crea_hitbox_obliqua(scena, oggetto, lunghezza, step, angolo_gradi, spessore, fisica = PP.physics.type.STATIC) {
     let x = oggetto.geometry.x;
     let y = oggetto.geometry.y;
     let tangente = Math.tan(angolo_gradi * Math.PI / 180);
@@ -31,20 +123,133 @@ export function crea_hitbox_obliqua(scena, oggetto, lunghezza, step, angolo_grad
         let centro_y = y - (centro_x - x) * tangente;
 
         let hitbox = PP.shapes.rectangle_add(scena, centro_x, centro_y, larghezza_hitbox, spessore, COLORE_HITBOX, ALPHA_HITBOX);
-        PP.physics.add(scena, hitbox, PP.physics.type.STATIC);
+        PP.physics.add(scena, hitbox, fisica);
         oggetto.hitbox.push(hitbox);
     }
 }
 
-export function collisioni_hitbox_obliqua(scena, giocatore, oggetto) {
+function collisioni_hitbox_obliqua(scena, giocatore, oggetto) {
     for (let i = 0; i < oggetto.hitbox.length; i++) {
-        PP.physics.add_collider(scena, giocatore, oggetto.hitbox[i]);
+        if (oggetto.mobile) {
+            PP.physics.add_collider_f(scena, giocatore, oggetto.hitbox[i], function () {
+                ritorna_se_colpisce(giocatore, oggetto);
+            });
+        } else {
+            PP.physics.add_collider(scena, giocatore, oggetto.hitbox[i]);
+        }
     }
 }
 
-export function elimina_hitbox_obliqua(oggetto) {
-    for (let i = 0; i < oggetto.hitbox.length; i++) {
-        PP.assets.destroy(oggetto.hitbox[i]);
-    }
-    oggetto.hitbox = [];
+// FUNZIONI GENERAZIONE AGGIUNTE & TRIGGERS
+
+function crea_zona_attrito(scena, piattaforma, attrito) {
+    let bordo_sinistro = piattaforma.x - piattaforma.lunghezza / 2;
+    let sinistra = bordo_sinistro + attrito.da * piattaforma.lunghezza;
+    let destra = bordo_sinistro + attrito.a * piattaforma.lunghezza;
+
+    let centro_x = (sinistra + destra) / 2;
+    let centro_y = piattaforma.y - ALTEZZA_ZONA_ATTRITO / 2;
+
+    let zona = PP.shapes.rectangle_add(scena, centro_x, centro_y, destra - sinistra, ALTEZZA_ZONA_ATTRITO, COLORE_ATTRITO, ALPHA_ATTRITO);
+    PP.physics.add(scena, zona, PP.physics.type.STATIC);
+
+    zona.attrito = attrito;
+    return zona;
 }
+
+function segna_zona_attrito(scena, giocatore, zona) {
+    giocatore.zona_attrito = zona.attrito;
+}
+
+function lancia_da_molla(scena, giocatore, zona) {
+    if (PP.physics.get_velocity_y(giocatore) < 0) return;
+    PP.physics.set_velocity_y(giocatore, -zona.forza);
+    giocatore.lanciato_da_molla = true;
+}
+
+export function attiva_triggers_piattaforme(scena, giocatore, piattaforme) {
+    for (let piattaforma of piattaforme) {
+        collisioni_hitbox_obliqua(scena, giocatore, piattaforma);
+        if (piattaforma.molla) {
+            PP.physics.add_overlap_f(scena, giocatore, piattaforma.molla, lancia_da_molla);
+        }
+        if (piattaforma.zona_attrito) {
+            PP.physics.add_overlap_f(scena, giocatore, piattaforma.zona_attrito, segna_zona_attrito);
+        }
+    }
+}
+
+// FUNZIONI MOVIMENTO
+
+function rendi_mobile(oggetto) {
+    PP.physics.set_allow_gravity(oggetto, false);
+    PP.physics.set_immovable(oggetto, true);
+}
+
+function muovi_piattaforma(scena, piattaforma) {
+    let movimento = piattaforma.mobile;
+    let passo = 1 / scena.physics.world.fps;
+
+    let dx = movimento.a.x - movimento.da.x;
+    let dy = movimento.a.y - movimento.da.y;
+    let distanza = Math.sqrt(dx * dx + dy * dy);
+
+    movimento.avanzamento += movimento.direzione * movimento.velocita * passo / distanza;
+
+    if (movimento.avanzamento >= 1) {
+        movimento.avanzamento = 1;
+        movimento.direzione = -1;
+    }
+    if (movimento.avanzamento <= 0) {
+        movimento.avanzamento = 0;
+        movimento.direzione = 1;
+    }
+
+    let nuovo_x = movimento.da.x + dx * movimento.avanzamento;
+    let nuovo_y = movimento.da.y + dy * movimento.avanzamento;
+
+    let velocita_x = (nuovo_x - piattaforma.x) / passo;
+    let velocita_y = (nuovo_y - piattaforma.y) / passo;
+
+    if (piattaforma.molla) corpi.push(piattaforma.molla);
+
+    for (let corpo of piattaforma.hitbox) {
+        PP.physics.set_velocity_x(corpo, velocita_x);
+        PP.physics.set_velocity_y(corpo, velocita_y);
+    }
+
+    piattaforma.velocita_y = velocita_y;
+    piattaforma.x = nuovo_x;
+    piattaforma.y = nuovo_y;
+}
+
+function ritorna_se_colpisce(giocatore, piattaforma) {
+    let sta_scendendo = piattaforma.velocita_y > 0;
+    let giocatore_sotto = giocatore.geometry.y > piattaforma.y + SPESSORE;
+    if (!sta_scendendo || !giocatore_sotto) return;
+
+    piattaforma.mobile.direzione = -piattaforma.mobile.direzione;
+    piattaforma.velocita_y = 0;
+}
+
+export function aggiorna(scena, giocatore, piattaforme) {
+    let attrito = giocatore.zona_attrito;
+    giocatore.zona_attrito = null;
+
+    giocatore.moltiplicatore_attrito = 1;
+    giocatore.moltiplicatore_accelerazione = 1;
+    giocatore.salto_bloccato = false;
+
+    for (let piattaforma of piattaforme) {
+        if (piattaforma.mobile) muovi_piattaforma(scena, piattaforma);
+    }
+
+    if (!attrito || !PP.physics.is_on_ground(giocatore)) return;
+
+    let superficie_scivolosa = attrito.tipo === "scivoloso";
+
+    giocatore.moltiplicatore_attrito = superficie_scivolosa ? SCIVOLOSO_ATTRITO : APPICCICOSO_ATTRITO;
+    giocatore.moltiplicatore_accelerazione = superficie_scivolosa ? SCIVOLOSO_ACCELERAZIONE : APPICCICOSO_ACCELERAZIONE;
+    giocatore.salto_bloccato = !superficie_scivolosa;
+}
+

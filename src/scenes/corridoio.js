@@ -3,8 +3,9 @@ import * as Porte from "../modules/porte.js";
 import * as Bordi from "../modules/bordi.js";
 import * as GameCamera from "../modules/camera.js";
 
-const LARGHEZZA_SCHERMO = 1280;
 const ALTEZZA_SCHERMO = 720;
+
+const LARGHEZZA_SCHERMO = 1280;
 
 const NOME = "corridoio";
 
@@ -23,16 +24,16 @@ const BORDO_SINISTRO_X = 120;
 const BORDO_DESTRO_X = LARGHEZZA_MONDO-320;
 
 const PUO_SALTARE = false;
-const DESTINAZIONE_OCCHIALI = null;
+const DESTINAZIONE_OCCHIALI = "corridoioBN";
 
 const PORTA_1_X = 150;
-const PORTA_1_DESTINAZIONE = "stanza";
+const PORTA_1_DESTINAZIONE = "salotto";
 const PORTA_2_X = 560;
 const PORTA_2_DESTINAZIONE = null;
 const PORTA_3_X = 1060;
 const PORTA_3_DESTINAZIONE = "stanza_goody";
 const PORTA_4_X = 1490;
-const PORTA_4_DESTINAZIONE = null;
+const PORTA_4_DESTINAZIONE = "stanza";
 
 const assets = {};
 let goody = null;
@@ -74,22 +75,28 @@ function crea_giocatore(scene, pavimento, porte, bordi) {
     else{
         switch(PP.game_state.get_variable("stanzaPreSwap")){
             case "stanza":
-                goody_spawn_x = PORTA_1_X;
+                goody_spawn_x = PORTA_4_X;
+                goody_spawn_direzione = -1;
                 break;
             case "stanza_goody":
                 goody_spawn_x = PORTA_3_X;
+                goody_spawn_direzione = -1;
+                break;
+            case "stanza_bimba":
+                goody_spawn_x = PORTA_2_X;
                 goody_spawn_direzione = -1;
                 break;
             default:
                 goody_spawn_x = 150;
         }
     }
+    
     goody = Goody.inizializza(scene, goody_spawn_x, PAVIMENTO_Y, PUO_SALTARE, goody_spawn_direzione);
     PP.physics.add_collider(scene, goody, pavimento);
     for (const bordo of bordi) {
         PP.physics.add_collider(scene, goody, bordo);
     }
-    Porte.calcola_vicinanza_porta(scene, goody, porte);
+    Porte.attiva_rilevamento_porte(scene, goody, porte);
 }
 
 function imposta_camera(scene) {
@@ -115,7 +122,7 @@ function update(scene) {
     PP.game_state.set_variable("GoodyXstanza", goody.geometry.x);
     PP.game_state.set_variable("stanzaPreSwap", NOME);
     Goody.aggiorna(scene, goody, DESTINAZIONE_OCCHIALI);
-    Porte.gestisci_interazione(scene, goody);
+    Porte.gestisci_interazione_porta(scene, goody);
 }
 
 function destroy(scene) {

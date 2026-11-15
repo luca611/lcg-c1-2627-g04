@@ -76,7 +76,7 @@ function crea_giocatore(scene, pavimento, porte, bordi) {
     for (const bordo of bordi) {
         PP.physics.add_collider(scene, goody, bordo);
     }
-    Porte.calcola_vicinanza_porta(scene, goody, porte);
+    Porte.attiva_rilevamento_porte(scene, goody, porte);
 }
 
 function imposta_camera(scene) {
@@ -102,12 +102,12 @@ function preload(scene) {
 function create(scene) {
     imposta_mondo(scene);
     crea_sfondo(scene);
+    crea_primo_piano(scene);
     const pavimento = crea_pavimento(scene);
     const bordi = crea_bordi(scene);
     const porte = crea_porte(scene);
     crea_giocatore(scene, pavimento, porte, bordi);
     imposta_camera(scene);
-    crea_primo_piano(scene);
 }
 
 function update(scene) {
@@ -115,7 +115,7 @@ function update(scene) {
     PP.game_state.set_variable("GoodyDirezione", goody.direzione);
     PP.game_state.set_variable("stanzaPreSwap", NOME);
     Goody.aggiorna(scene, goody, DESTINAZIONE_OCCHIALI);
-    Porte.gestisci_interazione(scene, goody);
+    Porte.gestisci_interazione_porta(scene, goody);
 }
 
 function destroy(scene) {
