@@ -27,13 +27,13 @@ const PUO_SALTARE = false;
 const DESTINAZIONE_OCCHIALI = "corridoioBN";
 
 const PORTA_1_X = 150;
-const PORTA_1_DESTINAZIONE = "salotto";
+const PORTA_1_DESTINAZIONE = "stanza";
 const PORTA_2_X = 560;
 const PORTA_2_DESTINAZIONE = null;
 const PORTA_3_X = 1060;
 const PORTA_3_DESTINAZIONE = "stanza_goody";
 const PORTA_4_X = 1490;
-const PORTA_4_DESTINAZIONE = "stanza";
+const PORTA_4_DESTINAZIONE = "salotto";
 
 const assets = {};
 let goody = null;
@@ -74,7 +74,7 @@ function crea_giocatore(scene, pavimento, porte, bordi) {
     }
     else{
         switch(PP.game_state.get_variable("stanzaPreSwap")){
-            case "stanza":
+            case "salotto":
                 goody_spawn_x = PORTA_4_X;
                 goody_spawn_direzione = -1;
                 break;

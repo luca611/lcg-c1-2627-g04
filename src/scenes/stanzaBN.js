@@ -35,7 +35,7 @@ const SPAWN_DIREZIONE = 1;
 const DESTINAZIONE_OCCHIALI = "stanza";
 
 const PORTA_1_X = 130;
-const PORTA_1_DESTINAZIONE = "corridoio";
+const PORTA_1_DESTINAZIONE = "corridoioBN";
 
 const assets = {};
 let goody = null;

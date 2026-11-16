@@ -7,7 +7,7 @@ const BOUNDS_X = 0;
 const BOUNDS_Y = 0;
 
 const PEEK_DISTANZA_X = 150;
-const PEEK_DISTANZA_Y = 50;
+const PEEK_DISTANZA_Y = 125;
 const PEEK_MORBIDEZZA = 0.1;
 
 let stato_camera = null;

@@ -110,6 +110,7 @@ export function inizializza(scene, x, y, puo_saltare, direzione) {
     player.geometry.flip_x = direzione < 0; //mettere una condizione assegna alla variabile il risultayo booleano
     player.interagendo = false;
     player.animazione_corrente = null;
+    player.velocita_max = null;
 
     //parametri che vengono modificati dalle piattaforme scivolose / appiccicose
     player.moltiplicatore_attrito = 1;
@@ -200,8 +201,11 @@ export function aggiorna_fisica(scene, player) {
         PP.physics.set_drag_x(player, ATTRITO_ARIA);
     }
 
-    if (velocita_x > VELOCITA_MAX || velocita_x < -VELOCITA_MAX) {
-        PP.physics.set_velocity_x(player, player.direzione * VELOCITA_MAX);
+    let velocita_max = player.velocita_max!=null ? player.velocita_max : VELOCITA_MAX;
+    console.log(velocita_max)
+
+    if (velocita_x > velocita_max || velocita_x < -velocita_max) {
+        PP.physics.set_velocity_x(player, player.direzione * velocita_max);
     }
     if (velocita_y > VELOCITA_CADUTA_MAX) {
         PP.physics.set_velocity_y(player, VELOCITA_CADUTA_MAX);

@@ -16,7 +16,7 @@ const MOLLA_SPORGENZA = 30;
 
 const SCIVOLOSO_ATTRITO = 0.08;
 const SCIVOLOSO_ACCELERAZIONE = 0.35;
-const APPICCICOSO_ATTRITO = 3;
+const APPICCICOSO_ATTRITO = 1;
 const APPICCICOSO_ACCELERAZIONE = 0.45;
 
 /*  
@@ -29,6 +29,7 @@ const APPICCICOSO_ACCELERAZIONE = 0.45;
     attrito     { tipo, da, a } appiccicoso o scivoloso e percentuale da a (0,1).  (sempre piatta e ferma: l'angolo viene ignorato)
     salto       { x, y, forza } 
     mobile      { da, a, velocita }  (sempre orizzontale/piatta: l'angolo viene ignorato)
+    immagine    percorso oppure  { percorso, offset_x, offset_y }
 */
 export function crea_piattaforma(scena, opzioni) {
 
@@ -44,7 +45,8 @@ export function crea_piattaforma(scena, opzioni) {
         attrito: opzioni.attrito,
         mobile: opzioni.mobile,
         molla: null,
-        zona_attrito: null
+        zona_attrito: null,
+        immagine: null
     };
 
     if (piattaforma.mobile) {
@@ -74,6 +76,11 @@ export function crea_piattaforma(scena, opzioni) {
         if (piattaforma.mobile) rendi_mobile(hitbox);
     }
 
+    // Se ha un'immagine
+    if (opzioni.immagine) {
+        piattaforma.immagine = crea_immagine(scena, piattaforma, opzioni.immagine);
+    }
+
     // Se ha una molla sopra
     if (opzioni.salto) {
         let salto = opzioni.salto;
@@ -101,6 +108,47 @@ export function crea_piattaforme(scena, dati_piattaforme) {
         piattaforme.push(crea_piattaforma(scena, piattaforma));
     }
     return piattaforme;
+}
+
+// IMMAGINI DELLE PIATTAFORME
+
+function leggi_dati_immagine(immagine) {
+    if (typeof immagine === "string") immagine = { percorso: immagine };
+    return {
+        percorso: immagine.percorso,
+        offset_x: immagine.offset_x !== undefined ? immagine.offset_x : 0,
+        offset_y: immagine.offset_y !== undefined ? immagine.offset_y : 0,
+    };
+}
+
+export function carica_immagini_piattaforme(scena, dati_piattaforme) {
+    scena.immagini_piattaforme = {};
+    for (let dati of dati_piattaforme) {
+        if (!dati.immagine) continue;
+        let percorso = leggi_dati_immagine(dati.immagine).percorso;
+        if (!scena.immagini_piattaforme[percorso]) {
+            scena.immagini_piattaforme[percorso] = PP.assets.image.load(scena, percorso);
+        }
+    }
+}
+
+function crea_immagine(scena, piattaforma, immagine) {
+    let dati = leggi_dati_immagine(immagine);
+    let asset = scena.immagini_piattaforme ? scena.immagini_piattaforme[dati.percorso] : null;
+    if (!asset) {
+        return null;
+    }
+
+    let oggetto = PP.assets.image.add(scena, asset, piattaforma.x, piattaforma.y, 0.5, 0.5);
+    let risultato = { oggetto: oggetto, offset_x: dati.offset_x, offset_y: dati.offset_y };
+
+    posiziona_immagine(piattaforma, risultato);
+    return risultato;
+}
+
+function posiziona_immagine(piattaforma, immagine) {
+    immagine.oggetto.geometry.x = piattaforma.x + immagine.offset_x;
+    immagine.oggetto.geometry.y = piattaforma.y + immagine.offset_y;
 }
 
 // GENERAZIONE HITBOX OBLIQUE
@@ -188,7 +236,7 @@ function rendi_mobile(oggetto) {
 
 function muovi_piattaforma(scena, piattaforma) {
     let movimento = piattaforma.mobile;
-    let passo = 1 / scena.physics.world.fps;
+    let passo = 1 / 60;
 
     let dx = movimento.a.x - movimento.da.x;
     let dy = movimento.a.y - movimento.da.y;
@@ -205,15 +253,19 @@ function muovi_piattaforma(scena, piattaforma) {
         movimento.direzione = 1;
     }
 
-    let nuovo_x = movimento.da.x + dx * movimento.avanzamento;
-    let nuovo_y = movimento.da.y + dy * movimento.avanzamento;
+    let t = movimento.avanzamento;
+    let progresso = t * t * (3 - 2 * t);
+
+    let nuovo_x = movimento.da.x + dx * progresso;
+    let nuovo_y = movimento.da.y + dy * progresso;
 
     let velocita_x = (nuovo_x - piattaforma.x) / passo;
     let velocita_y = (nuovo_y - piattaforma.y) / passo;
 
+    let corpi = piattaforma.hitbox.slice();
     if (piattaforma.molla) corpi.push(piattaforma.molla);
 
-    for (let corpo of piattaforma.hitbox) {
+    for (let corpo of corpi) {
         PP.physics.set_velocity_x(corpo, velocita_x);
         PP.physics.set_velocity_y(corpo, velocita_y);
     }
@@ -221,6 +273,8 @@ function muovi_piattaforma(scena, piattaforma) {
     piattaforma.velocita_y = velocita_y;
     piattaforma.x = nuovo_x;
     piattaforma.y = nuovo_y;
+
+    if (piattaforma.immagine) posiziona_immagine(piattaforma, piattaforma.immagine);
 }
 
 function ritorna_se_colpisce(giocatore, piattaforma) {
@@ -235,7 +289,7 @@ function ritorna_se_colpisce(giocatore, piattaforma) {
 export function aggiorna(scena, giocatore, piattaforme) {
     let attrito = giocatore.zona_attrito;
     giocatore.zona_attrito = null;
-
+    giocatore.velocita_max = null;
     giocatore.moltiplicatore_attrito = 1;
     giocatore.moltiplicatore_accelerazione = 1;
     giocatore.salto_bloccato = false;
@@ -251,5 +305,7 @@ export function aggiorna(scena, giocatore, piattaforme) {
     giocatore.moltiplicatore_attrito = superficie_scivolosa ? SCIVOLOSO_ATTRITO : APPICCICOSO_ATTRITO;
     giocatore.moltiplicatore_accelerazione = superficie_scivolosa ? SCIVOLOSO_ACCELERAZIONE : APPICCICOSO_ACCELERAZIONE;
     giocatore.salto_bloccato = !superficie_scivolosa;
+    giocatore.velocita_max = attrito.tipo=="appiccicoso"? 120 : null;
+    console.log("calcolato: "+attrito.tipo);console.log( superficie_scivolosa? null : 120)
 }
 
