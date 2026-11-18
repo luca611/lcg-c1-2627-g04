@@ -19,3 +19,4 @@ University project for the Computer Graphics / Game Design course @ Politecnico 
 this project is under [GNUv3 License](./LICENSE)
 
 Mario Tranchina
+Camilla Parma
