@@ -20,3 +20,4 @@ this project is under [GNUv3 License](./LICENSE)
 
 Mario Tranchina
 Camilla Parma
+Randie Perini
