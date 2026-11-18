@@ -17,3 +17,5 @@ The game combines two things:
 
 University project for the Computer Graphics / Game Design course @ Politecnico di Milano
 this project is under [GNUv3 License](./LICENSE)
+
+Mario Tranchina
