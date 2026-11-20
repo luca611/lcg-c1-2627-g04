@@ -2,20 +2,25 @@
 <html lang="it">
 <head>
     <meta charset="utf-8">
-    <title>Corridoio e mondo metafisico</title>
+    <title>Gruppo 4</title>
     <script src="./lib/phaser.min.js"></script>
     <script src="./lib/poliphaser.js"></script>
+    <script src="./src/scenes/stanza.js" type="module"></script>
     <script src="./src/scenes/corridoioBN.js" type="module"></script>
     <script src="./src/scenes/corridoio.js" type="module"></script>
-    <script src="./src/scenes/stanza.js" type="module"></script>
     <script src="./src/scenes/stanzaBN.js" type="module"></script>
     <script src="./src/scenes/stanzaGoody.js" type="module"></script>
     <script src="./src/scenes/stanzaGoodyBN.js" type="module"></script>
     <script src="./src/scenes/salotto.js" type="module"></script>
     <script src="./src/scenes/salottoBN.js" type="module"></script>
     <script type="module" src="./src/main.js"></script>
+    <style>
+        .game canvas {
+            border: solid 1rem rgb( 77, 32, 62)
+        }
+    </style>
 </head>
-<body style="background-color: rgb(186, 102, 176); height: 100vh; display: flex; align-items: center; justify-content: center;">
-    <div id="game"></div>
+<body style="background: url('./resources/pattern/pattern_pagina.png') repeat;  background-size: 100px ; height: 100vh; display: flex; align-items: center; justify-content: center;overflow: hidden;">
+    <div id="game" class="game"></div>
 </body>
 </html>

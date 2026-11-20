@@ -2,13 +2,15 @@ import * as Goody from "../modules/goody.js";
 import * as Porte from "../modules/porte.js";
 import * as Bordi from "../modules/bordi.js";
 import * as GameCamera from "../modules/camera.js";
+import * as Hud from "../modules/hud.js";
+import * as Parallasse from "../modules/parallasse.js";
 
-const LARGHEZZA_SCHERMO = 1280;
 const ALTEZZA_SCHERMO = 720;
 
 const NOME = "stanzaBN";
 
-const SFONDO = "./resources/imgs/ambienti/stanza_da_letto/stanza_genitori_bn.jpg";
+const PAESAGGIO = "./resources/imgs/ambienti/stanza_da_letto/stanza_genitori_bn_sfondo_finestra.png";
+const SFONDO = "./resources/imgs/ambienti/stanza_da_letto/stanza_genitori_bn.png";
 const PRIMO_PIANO = "./resources/imgs/ambienti/stanza_da_letto/stanza_genitori_bn_primo_piano.png";
 const LARGHEZZA_MONDO = 1978;
 
@@ -17,9 +19,9 @@ const SFONDO_Y = 0;
 const SFONDO_ORIGINE = 0;
 
 const PRIMO_PIANO_Y = 0;
-const PRIMO_PIANO_ORIGINE = 0;
 const PRIMO_PIANO_Z_INDEX = 10;
-const PARALLASSE_PRIMO_PIANO = 1.25;
+const PAESAGGIO_Z_INDEX = -10;
+const PAESAGGIO_Y = 0;
 
 const PAVIMENTO_Y = 600;
 const PAVIMENTO_COLORE = "0x000000";
@@ -84,24 +86,26 @@ function imposta_camera(scene) {
 }
 
 function crea_primo_piano(scene) {
-    const scroll_centrale = (LARGHEZZA_MONDO - LARGHEZZA_SCHERMO) / 2;
-    const primo_piano = PP.assets.image.add(scene, assets.primo_piano, (PARALLASSE_PRIMO_PIANO - 1) * scroll_centrale, PRIMO_PIANO_Y, PRIMO_PIANO_ORIGINE, PRIMO_PIANO_ORIGINE );
-    primo_piano.tile_geometry.scroll_factor_x = PARALLASSE_PRIMO_PIANO;
+    Parallasse.crea_primo_piano(scene, assets.primo_piano, PRIMO_PIANO_Y, PRIMO_PIANO_Z_INDEX, LARGHEZZA_MONDO);
+}
 
-    const layer_primo_piano = PP.layers.create(scene);
-    PP.layers.add_to_layer(layer_primo_piano, primo_piano);
-    PP.layers.set_z_index(layer_primo_piano, PRIMO_PIANO_Z_INDEX);
+function crea_paesaggio(scene) {
+    Parallasse.crea_sfondo(scene, assets.paesaggio, PAESAGGIO_Y, PAESAGGIO_Z_INDEX, LARGHEZZA_MONDO);
 }
 
 function preload(scene) {
     Goody.carica(scene);
+    Hud.inizializza_HUD(scene);
+    assets.paesaggio = PP.assets.image.load(scene, PAESAGGIO);
     assets.sfondo = PP.assets.image.load(scene, SFONDO);
     assets.primo_piano = PP.assets.image.load(scene, PRIMO_PIANO);
 }
 
 function create(scene) {
     imposta_mondo(scene);
+    Hud.visualizza_HUD(scene);
     crea_sfondo(scene);
+    crea_paesaggio(scene);
     const pavimento = crea_pavimento(scene);
     const bordi = crea_bordi(scene);
     const porte = crea_porte(scene);
@@ -111,6 +115,8 @@ function create(scene) {
 }
 
 function update(scene) {
+    Hud.aggiorna_HUD(scene);
+    Parallasse.aggiorna_parallasse(scene);
     PP.game_state.set_variable("GoodyXstanza", goody.geometry.x);
     PP.game_state.set_variable("GoodyDirezione", goody.direzione);
     PP.game_state.set_variable("stanzaPreSwap", NOME);

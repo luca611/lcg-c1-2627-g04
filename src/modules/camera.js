@@ -10,21 +10,21 @@ const PEEK_DISTANZA_X = 150;
 const PEEK_DISTANZA_Y = 125;
 const PEEK_MORBIDEZZA = 0.1;
 
-let stato_camera = null;
+let offset_x = OFFSET_BASE_X;
+let offset_y = OFFSET_BASE_Y;
+let base_y = OFFSET_BASE_Y;
 
 export function inizializza(scene, larghezza_mondo, altezza_mondo) {
-    stato_camera = {
-        offset_x: OFFSET_BASE_X,
-        offset_y: OFFSET_BASE_Y,
-        base_y: OFFSET_BASE_Y,
-    };
+    offset_x = OFFSET_BASE_X;
+    offset_y = OFFSET_BASE_Y;
+    base_y = OFFSET_BASE_Y;
 
     PP.camera.set_bounds(scene, BOUNDS_X, BOUNDS_Y, larghezza_mondo, altezza_mondo);
 }
 
 export function segui(scene, oggetto, offset_base_y = OFFSET_BASE_Y) {
-    stato_camera.base_y = offset_base_y;
-    stato_camera.offset_y = offset_base_y;
+    base_y = offset_base_y;
+    offset_y = offset_base_y;
     PP.camera.start_follow(scene, oggetto, OFFSET_BASE_X, offset_base_y);
 }
 
@@ -46,10 +46,10 @@ export function gestisci_sbircio(scene) {
         dir_y = dir_y - 1;
     }
 
-    let destinazione_x = OFFSET_BASE_X - dir_x * PEEK_DISTANZA_X;
-    let destinazione_y = stato_camera.base_y - dir_y * PEEK_DISTANZA_Y;
+    const destinazione_x = OFFSET_BASE_X - dir_x * PEEK_DISTANZA_X;
+    const destinazione_y = base_y - dir_y * PEEK_DISTANZA_Y;
 
-    stato_camera.offset_x += (destinazione_x - stato_camera.offset_x) * PEEK_MORBIDEZZA;
-    stato_camera.offset_y += (destinazione_y - stato_camera.offset_y) * PEEK_MORBIDEZZA;
-    PP.camera.set_follow_offset(scene, stato_camera.offset_x, stato_camera.offset_y);
+    offset_x += (destinazione_x - offset_x) * PEEK_MORBIDEZZA;
+    offset_y += (destinazione_y - offset_y) * PEEK_MORBIDEZZA;
+    PP.camera.set_follow_offset(scene, offset_x, offset_y);
 }
