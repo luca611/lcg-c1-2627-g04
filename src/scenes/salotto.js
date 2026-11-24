@@ -9,8 +9,9 @@ const ALTEZZA_SCHERMO = 720;
 
 const NOME = "salotto";
 
-const SFONDO = "./resources/imgs/ambienti/salotto_e_cucina/stanza_salotto_e_cucina_colori.jpg";
+const SFONDO = "./resources/imgs/ambienti/salotto_e_cucina/stanza_salotto_e_cucina_colori.png";
 const PRIMO_PIANO = "./resources/imgs/ambienti/salotto_e_cucina/stanza_salotto_e_cucina_colori_primissimo_piano.png";
+const PAESAGGIO = "./resources/imgs/ambienti/salotto_e_cucina/paesaggio_colori.png";
 
 const PRIMO_PIANO_1_NOSCROLL = "./resources/imgs/ambienti/salotto_e_cucina/stanza_salotto_e_cucina_colori_primo_piano.png";
 const PRIMO_PIANO_2_NOSCROLL = "./resources/imgs/ambienti/salotto_e_cucina/stanza_salotto_e_cucinacolori__arco.png";
@@ -20,6 +21,9 @@ const LARGHEZZA_MONDO = 3086;
 const SFONDO_X = 0;
 const SFONDO_Y = 0;
 const SFONDO_ORIGINE = 0;
+
+const PAESAGGIO_Z_INDEX = -10;
+const PAESAGGIO_Y = 0;
 
 const PRIMO_PIANO_Y = 0;
 const PRIMO_PIANO_Z_INDEX = 10;
@@ -90,6 +94,10 @@ function crea_primo_piano(scene) {
     Parallasse.crea_primo_piano(scene, assets.primo_piano, PRIMO_PIANO_Y, PRIMO_PIANO_Z_INDEX, LARGHEZZA_MONDO);
 }
 
+function crea_paesaggio(scene) {
+    Parallasse.crea_sfondo(scene, assets.paesaggio, PAESAGGIO_Y, PAESAGGIO_Z_INDEX, LARGHEZZA_MONDO);
+}
+
 function crea_primo_piano_noscroll(scene){
     let arco = PP.assets.image.add(scene, assets.arco, SFONDO_X, SFONDO_Y, SFONDO_ORIGINE, SFONDO_ORIGINE);
     PP.layers.set_z_index(arco, PRIMO_PIANO_Z_INDEX-1);
@@ -102,15 +110,18 @@ function preload(scene) {
     Goody.carica(scene);
     Hud.inizializza_HUD(scene);
     assets.sfondo = PP.assets.image.load(scene, SFONDO);
+    assets.paesaggio = PP.assets.image.load(scene, PAESAGGIO);
     assets.primo_piano = PP.assets.image.load(scene, PRIMO_PIANO);
     assets.arco = PP.assets.image.load(scene,PRIMO_PIANO_2_NOSCROLL);
     assets.tavolo= PP.assets.image.load(scene,PRIMO_PIANO_1_NOSCROLL);
 }
 
 function create(scene) {
+    Parallasse.imposta_dimensioni(LARGHEZZA_MONDO,ALTEZZA_SCHERMO);
     imposta_mondo(scene);
     Hud.visualizza_HUD(scene);
     crea_sfondo(scene);
+    crea_paesaggio(scene);
     const pavimento = crea_pavimento(scene);
     const bordi = crea_bordi(scene);
     const porte = crea_porte(scene);

@@ -1,9 +1,7 @@
 # lcg-c1-2627-g04
-*A 2D platformer & side-scrolling game about Madama Goody and gender equality.*
 
 This project is a university assignment for the **Computer Graphics / Game Design** course.
 It is a small browser game built with the Polimi Phaser wrapper: **[PoliPhaser](https://github.com/HEAPLab/poliphaser)** 
-(both included in the `lib/` folder).
 
 ## About the game
 
@@ -18,6 +16,7 @@ The game combines two things:
 University project for the Computer Graphics / Game Design course @ Politecnico di Milano
 this project is under [GNUv3 License](./LICENSE)
 
-Mario Tranchina
-Camilla Parma
+Luca Spoldi,
+Mario Tranchina,
+Camilla Parma &
 Randie Perini

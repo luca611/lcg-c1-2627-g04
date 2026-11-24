@@ -94,6 +94,7 @@ function preload(scene) {
 }
 
 function create(scene) {
+    Parallasse.imposta_dimensioni(LARGHEZZA_MONDO,ALTEZZA_SCHERMO);
     Hud.visualizza_HUD(scene);
     imposta_mondo(scene);
     crea_sfondo(scene);

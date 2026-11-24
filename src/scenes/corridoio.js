@@ -29,7 +29,7 @@ const DESTINAZIONE_OCCHIALI = "corridoioBN";
 const PORTA_1_X = 150;
 const PORTA_1_DESTINAZIONE = "stanza";
 const PORTA_2_X = 560;
-const PORTA_2_DESTINAZIONE = null;
+const PORTA_2_DESTINAZIONE = "stanza_bimba";
 const PORTA_3_X = 1060;
 const PORTA_3_DESTINAZIONE = "stanza_goody";
 const PORTA_4_X = 1490;
@@ -109,6 +109,7 @@ function preload(scene) {
 }
 
 function create(scene) {
+    //Parallasse.imposta_dimensioni(LARGHEZZA_MONDO,ALTEZZA_SCHERMO);
     imposta_mondo(scene);
     crea_sfondo(scene);
     const pavimento = crea_pavimento(scene);

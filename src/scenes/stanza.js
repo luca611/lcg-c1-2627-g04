@@ -9,7 +9,8 @@ const ALTEZZA_SCHERMO = 720;
 
 const NOME = "stanza";
 
-const SFONDO = "./resources/imgs/ambienti/stanza_da_letto/stanza_genitori_colori.jpg";
+const PAESAGGIO = "./resources/imgs/ambienti/stanza_da_letto/stanza_genitori_colori_sfondo_finestra.png";
+const SFONDO = "./resources/imgs/ambienti/stanza_da_letto/stanza_genitori_colori.png";
 const PRIMO_PIANO = "./resources/imgs/ambienti/stanza_da_letto/stanza_genitori_colori_primo_piano.png";
 const LARGHEZZA_MONDO = 1978;
 
@@ -19,6 +20,8 @@ const SFONDO_ORIGINE = 0;
 
 const PRIMO_PIANO_Y = 0;
 const PRIMO_PIANO_Z_INDEX = 10;
+const PAESAGGIO_Z_INDEX = -10;
+const PAESAGGIO_Y = 0;
 
 const PAVIMENTO_Y = 600;
 const PAVIMENTO_COLORE = "0x000000";
@@ -86,17 +89,24 @@ function crea_primo_piano(scene) {
     Parallasse.crea_primo_piano(scene, assets.primo_piano, PRIMO_PIANO_Y, PRIMO_PIANO_Z_INDEX, LARGHEZZA_MONDO);
 }
 
+function crea_paesaggio(scene) {
+    Parallasse.crea_sfondo(scene, assets.paesaggio, PAESAGGIO_Y, PAESAGGIO_Z_INDEX, LARGHEZZA_MONDO);
+}
+
 function preload(scene) {
     Goody.carica(scene);
     Hud.inizializza_HUD(scene);
+    assets.paesaggio = PP.assets.image.load(scene, PAESAGGIO);
     assets.sfondo = PP.assets.image.load(scene, SFONDO);
     assets.primo_piano = PP.assets.image.load(scene, PRIMO_PIANO);
 }
 
 function create(scene) {
+    Parallasse.imposta_dimensioni(LARGHEZZA_MONDO,ALTEZZA_SCHERMO);
     imposta_mondo(scene);
     Hud.visualizza_HUD(scene);
     crea_sfondo(scene);
+    crea_paesaggio(scene);
     const pavimento = crea_pavimento(scene);
     const bordi = crea_bordi(scene);
     const porte = crea_porte(scene);

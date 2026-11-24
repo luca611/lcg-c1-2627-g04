@@ -23,13 +23,7 @@ function aggiungi_a_HUD(elemento) {
 export function visualizza_HUD(scene) {
     crea_layer_HUD(scene);
     console.log(layer_hud)
-    //let bordo = PP.assets.image.add(scene, img_annerimento_bordo, 0, 0, 0, 0);
-    //bordo.ph_obj.setScrollFactor(0)
-    //aaggiungi_a_HUD(bordo);
 }
 
 export function aggiorna_HUD(scene) {
-    let camera_x = PP.camera.get_scroll_x(scene);
-    let camera_y = PP.camera.get_scroll_y(scene);
-
 }
